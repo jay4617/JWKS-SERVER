@@ -52,3 +52,8 @@ tests/
 
 - This project is for learning. Do **not** use these keys in production.
 - The JWKS endpoint purposely excludes expired keys; `/auth?expired=1` still signs with the expired private key to exercise the client behavior.
+
+## Deliverables
+- Student: Jay Findoliya (11861304), Date-09/21/2025
+- GitHub Repo: 
+- How to run:

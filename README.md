@@ -1,0 +1,54 @@
+# JWKS Server (Educational)
+
+FastAPI-based JWKS server that:
+- Generates RSA key pairs with `kid` and expiry.
+- Serves a RESTful JWKS endpoint **with only unexpired keys**.
+- Issues JWTs at `/auth` (POST). If the query parameter `?expired=1` is present,
+  it issues a JWT signed with the **expired** key and with an expired `exp` claim.
+- Includes tests and coverage.
+
+## Quickstart
+
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install -U pip
+pip install -e .
+pip install -r requirements.txt
+
+# Run server
+uvicorn app.main:app --reload --port 8080
+
+# JWKS
+curl http://localhost:8080/.well-known/jwks.json
+
+# Auth (valid token)
+curl -X POST http://localhost:8080/auth
+
+# Auth (expired token)
+curl -X POST "http://localhost:8080/auth?expired=1"
+```
+
+## Tests & Coverage
+
+```bash
+coverage run -m pytest
+coverage report -m
+```
+
+## Project Structure
+
+```
+app/
+  __init__.py
+  main.py         # FastAPI endpoints
+  keys.py         # RSA key management & JWK helpers
+  models.py       # Pydantic models
+tests/
+  test_api.py
+```
+
+## Notes
+
+- This project is for learning. Do **not** use these keys in production.
+- The JWKS endpoint purposely excludes expired keys; `/auth?expired=1` still signs with the expired private key to exercise the client behavior.

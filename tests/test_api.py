@@ -1,3 +1,14 @@
+"""Test suite for JWKS server functionality.
+
+Tests cover:
+- Valid JWT authentication and verification
+- Expired JWT handling
+- Proper HTTP methods and status codes
+- JWKS key filtering (expired keys excluded)
+- Key expiry validation
+
+Ensures >80% test coverage as required by the assignment.
+"""
 import json
 import time
 
@@ -59,7 +70,7 @@ def test_expired_jwt_authentication_and_jwk_not_in_jwks():
     # Verifying with expiration should fail
     try:
         jwt.decode(token, key=pub_key, algorithms=["RS256"])
-        assert False, "Expected token to be expired"
+        raise AssertionError("Expected token to be expired")
     except ExpiredSignatureError:
         pass
 

@@ -1,16 +1,23 @@
+"""RSA key management and JWT signing for JWKS server.
+
+This module provides:
+- RSA key pair generation with unique identifiers (kid) and expiry timestamps
+- Key rotation management with active and expired keys
+- JWT signing with proper kid headers
+- JWKS format conversion for public key distribution
+
+Educational use only - not for production environments.
+"""
 from __future__ import annotations
 
 import base64
-import json
 import time
 import uuid
 from dataclasses import dataclass
-from typing import Dict, List, Optional
 
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives import serialization
 import jwt
-from jwt.algorithms import RSAAlgorithm
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 
 def _b64u(data: bytes) -> str:
@@ -25,11 +32,11 @@ class KeyPair:
     public_pem: bytes
     expires_at: int  # unix epoch seconds
 
-    def is_expired(self, now: Optional[int] = None) -> bool:
+    def is_expired(self, now: int | None = None) -> bool:
         n = now or int(time.time())
         return n >= self.expires_at
 
-    def public_jwk(self) -> Dict[str, str]:
+    def public_jwk(self) -> dict[str, str]:
         """Return a public JWK dict suitable for JWKS."""
         public_key = serialization.load_pem_public_key(self.public_pem)
         numbers = public_key.public_numbers()
@@ -72,10 +79,12 @@ class KeyStore:
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         )
-        return KeyPair(kid=kid, private_pem=private_pem, public_pem=public_pem, expires_at=expires_at)
+        return KeyPair(
+            kid=kid, private_pem=private_pem, public_pem=public_pem, expires_at=expires_at
+        )
 
     # --- Helpers for app ---
-    def jwks(self) -> Dict[str, List[Dict[str, str]]]:
+    def jwks(self) -> dict[str, list[dict[str, str]]]:
         """Return JWKS dict containing only unexpired public keys."""
         keys = []
         if not self.active.is_expired():

@@ -1,10 +1,14 @@
-import time
-import base64
-from typing import Dict, Any
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives import serialization
+"""RSA key generation and JWKS formatting.
 
-from db import insert_key, get_key, get_all_valid_keys
+Handles RSA key pair generation, PEM loading, and conversion to JWK format.
+"""
+import base64
+import time
+from typing import Any
+
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from db import get_all_valid_keys, get_key, insert_key
 
 
 def _generate_private_key_pem() -> str:
@@ -35,11 +39,13 @@ def ensure_keys_in_db():
     expired_key = get_key(expired=True)
     valid_key = get_key(expired=False)
 
+    # Create expired key if none exists (expired 60 seconds ago)
     if expired_key is None:
         expired_pem = _generate_private_key_pem()
         expired_exp = now_ts - 60
         insert_key(expired_pem, expired_exp)
 
+    # Create valid key if none exists (expires in 1 hour)
     if valid_key is None:
         valid_pem = _generate_private_key_pem()
         valid_exp = now_ts + 3600
@@ -54,7 +60,7 @@ def _b64url_uint(val: int) -> str:
     return b64.decode("utf-8")
 
 
-def _private_to_jwk(kid: int, pem_str: str) -> Dict[str, Any]:
+def _private_to_jwk(kid: int, pem_str: str) -> dict[str, Any]:
     """Convert private key to public JWK format."""
     priv = load_private_key(pem_str)
     pub = priv.public_key()
@@ -74,7 +80,7 @@ def _private_to_jwk(kid: int, pem_str: str) -> Dict[str, Any]:
     return jwk
 
 
-def build_jwks() -> Dict[str, Any]:
+def build_jwks() -> dict[str, Any]:
     """Build JWKS from all valid keys in DB."""
     valid_keys = get_all_valid_keys()
     jwks_keys = [_private_to_jwk(k["kid"], k["key"]) for k in valid_keys]

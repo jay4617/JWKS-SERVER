@@ -1,6 +1,7 @@
-from app import app
 import base64
 import json
+
+from app import app
 
 
 def _decode_jwt_header(token: str):

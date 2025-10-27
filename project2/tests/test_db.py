@@ -1,6 +1,7 @@
 import os
 import time
-from db import init_db, get_key
+
+from db import get_key, init_db
 from keys import ensure_keys_in_db
 
 

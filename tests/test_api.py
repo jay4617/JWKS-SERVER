@@ -60,7 +60,7 @@ def test_expired_jwt_authentication_and_jwk_not_in_jwks():
     header = jwt.get_unverified_header(token)
     kid = header["kid"]
 
-    # The expired key should NOT be present in JWKS
+    # The expired key should NOT be present's in JWKS
     assert get_public_key_from_jwks(kid) is None
 
     # But we (as white-box unit test) can still fetch the key material from the store
